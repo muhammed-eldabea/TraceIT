@@ -1,0 +1,26 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {parseDoorsClassic}=require('../src/doorsClassic');
+const {analyze}=require('../src/engine');
+const header='kind,module,absolute,id,heading,text,targetModule,targetAbsolute\n';
+const a=header+'object,/Project/Tests,5,TEST-5,"Hello, test","Line 1\nLine 2",,\nlink,/Project/Tests,5,,,,/Project/Reqs,7\ncomplete,/Project/Tests,1,1,0,bridge-v1,,\n';
+const b=header+'object,/Project/Reqs,7,REQ-7,Requirement,Text,,\ncomplete,/Project/Reqs,1,0,0,bridge-v1,,\n';
+const source={name:'tests',format:'doors-classic-export',include:'a.csv',connection:'database',linkType:'verifies'};
+const parsed=parseDoorsClassic(a,source,'a.csv');
+assert.equal(parsed.items[0].text,'Line 1\nLine 2');assert.equal(parsed.items[0].line,2);assert.equal(parsed.relations.length,1);
+const result=analyze({sources:[source,{name:'requirements',format:'doors-classic-export',include:'b.csv',connection:'database'}],links:[{from:'tests',to:'requirements',type:'verifies'}]},[{source:'tests',path:'a.csv',text:a},{source:'requirements',path:'b.csv',text:b}]);
+assert.equal(result.links.length,1);assert.equal(result.coverage[0].covered,1);
+const invalid=analyze({sources:[source]},[{source:'tests',path:'bad.csv',text:'wrong,header\nfoo,bar'}]);
+assert.match(invalid.diagnostics[0],/invalid doors classic bridge header/i);
+console.log('DOORS Classic bridge import tests passed');
+
+assert.throws(()=>parseDoorsClassic(a.split('complete,')[0],source,'partial.csv'),/completion marker/);
+assert.throws(()=>parseDoorsClassic(a.replace('complete,/Project/Tests,1,1','complete,/Project/Tests,2,1'),source,'bad.csv'),/counts do not match/);
+assert.match(parseDoorsClassic(a.replace('1,1,0,bridge-v1','1,1,2,bridge-v1'),source,'restricted.csv').diagnostics[0],/2 unreadable/);
+const duplicate=header+'object,/Project/Tests,5,TEST-5,One,Text,,\nobject,/Project/Tests,5,TEST-6,Two,Text,,\ncomplete,/Project/Tests,2,0,0,bridge-v1,,\n';
+assert.throws(()=>parseDoorsClassic(duplicate,source,'duplicate.csv'),/duplicate.*object.*identity/i);
+const orphan=header+'object,/Project/Tests,5,TEST-5,One,Text,,\nlink,/Project/Tests,6,,,,/Project/Reqs,7\ncomplete,/Project/Tests,1,1,0,bridge-v1,,\n';
+assert.throws(()=>parseDoorsClassic(orphan,source,'orphan.csv'),/link source.*not.*exported/i);
+const rejected=analyze({sources:[source]},[{source:'tests',path:'duplicate.csv',text:duplicate}]);
+assert.equal(rejected.artifacts.length,0);
+assert.match(rejected.diagnostics.join('\n'),/duplicate.*object.*identity/i);

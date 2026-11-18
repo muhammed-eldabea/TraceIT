@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Requirements Traceability logo">
+  <rect width="256" height="256" rx="54" fill="#14283b"/>
+  <path d="M87 78h36c25 0 45 20 45 45v28M89 105v28c0 25 20 45 45 45h35" fill="none" stroke="#70d4cc" stroke-width="14" stroke-linecap="round"/>
+  <rect x="44" y="44" width="62" height="62" rx="14" fill="#fff"/>
+  <path d="M59 64h32M59 77h24M59 90h19" fill="none" stroke="#28516c" stroke-width="6" stroke-linecap="round"/>
+  <rect x="150" y="150" width="62" height="62" rx="14" fill="#70d4cc"/>
+  <path d="m166 181 10 10 20-23" fill="none" stroke="#14283b" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

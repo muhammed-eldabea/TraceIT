@@ -1,0 +1,53 @@
+{
+  "sources": [
+    {
+      "name": "requirements",
+      "format": "text",
+      "include": "requirements.md",
+      "artifact": "^# (?<id>REQ-[0-9]+): (?<title>.+)$"
+    },
+    {
+      "name": "word-tests",
+      "format": "docx",
+      "include": "verification.docx",
+      "artifact": "^(?<id>TEST-[0-9]+): (?<title>.+)$",
+      "reference": "^Verifies: (?<target>REQ-[0-9]+)$"
+    },
+    {
+      "name": "excel-tests",
+      "format": "xlsx",
+      "include": "verification.xlsx",
+      "artifact": "^Verification\\t[0-9]+\\t(?<id>TEST-[0-9]+)\\t",
+      "reference": "(?<target>REQ-[0-9]+)"
+    },
+    {
+      "name": "pdf-spec",
+      "format": "pdf",
+      "include": "supplement.pdf",
+      "artifact": "^(?<id>PDF-[0-9]+): (?<title>.+)$"
+    },
+    {
+      "name": "interchange",
+      "format": "reqif",
+      "include": "interchange.reqif"
+    },
+    {
+      "name": "slides",
+      "format": "pptx",
+      "include": "slides.pptx",
+      "artifact": "^(?<id>REQ-[0-9]+): (?<title>.+)$"
+    }
+  ],
+  "links": [
+    {
+      "from": "word-tests",
+      "to": "requirements",
+      "type": "verifies"
+    },
+    {
+      "from": "excel-tests",
+      "to": "requirements",
+      "type": "verifies"
+    }
+  ]
+}

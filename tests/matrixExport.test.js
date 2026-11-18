@@ -1,0 +1,17 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {parse}=require('csv-parse/sync');
+const {exportMatrix}=require('../src/matrixExport');
+const a={id:'T1',title:'test',source:'tests',path:'test,"file".md',line:2};
+const b={id:'R1',title:'=unsafe',source:'requirements',path:'req.md',line:1};
+const c={id:'R2',title:'No link',source:'requirements',path:'req.md',line:2};
+const rule={from:'tests',to:'requirements',type:'verifies',covered:1,total:2};
+const model={artifacts:[a,b,c],links:[{from:a,to:b,type:'verifies'}],coverage:[rule],diagnostics:['source failed'],unresolved:[]};
+const csv=exportMatrix(model,rule);const rows=parse(csv,{bom:true});
+assert.equal(rows.length,3); assert.equal(rows[1][2],'R1'); assert.equal(rows[1][5],'linked');
+assert.equal(rows[2][5],''); assert.equal(rows[1][3],"'=unsafe");
+assert.match(rows[1][0],/Needs review/); assert.match(rows[0][5],/test,"file"/);
+assert.throws(()=>exportMatrix(model,{...rule,type:'invalid'}),/no longer available/);
+console.log('Matrix export tests passed');
+const empty=parse(exportMatrix({...model,artifacts:[],links:[]},rule),{bom:true});
+assert.match(empty[0][0],/Needs review/);

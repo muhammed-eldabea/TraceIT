@@ -1,0 +1,9 @@
+.vscode/**
+.playwright-mcp/**
+tests/**
+.DS_Store
+**/.DS_Store
+*.vsix
+**/*.map
+node_modules/exceljs/dist/**
+node_modules/pdfjs-dist/types/**

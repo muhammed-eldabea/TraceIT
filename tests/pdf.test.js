@@ -1,0 +1,20 @@
+'use strict';
+const assert = require('node:assert/strict');
+const {PDFDocument, StandardFonts} = require('pdf-lib');
+const {extractPdf} = require('../src/pdf');
+const {analyze} = require('../src/engine');
+(async()=>{
+ const document=await PDFDocument.create();
+ const font=await document.embedFont(StandardFonts.Helvetica);
+ document.addPage().drawText('REQ-17: System shall start',{x:40,y:700,size:12,font});
+ document.addPage();
+ const extracted=await extractPdf(await document.save());
+ assert.match(extracted.text,/REQ-17: System shall start/);
+ assert.ok(extracted.diagnostics.some(x=>x.includes('Page 2')));
+ const result=analyze({sources:[{name:'pdf',format:'pdf',include:'*.pdf',artifact:'^(?<id>REQ-[0-9]+): (?<title>.+)$'}]},[{source:'pdf',path:'spec.pdf',...extracted,viewUri:'reqtrace-pdf:/x',originalUri:'file:///spec.pdf'}]);
+ assert.equal(result.artifacts[0].id,'REQ-17');
+ assert.equal(result.artifacts[0].page,1); assert.equal(result.artifacts[0].originalUri,'file:///spec.pdf');
+ assert.ok(result.diagnostics.some(x=>x.includes('Page 2')));
+ await assert.rejects(extractPdf(Buffer.from('not a PDF')));
+ console.log('PDF extraction tests passed');
+})().catch(error=>{console.error(error);process.exitCode=1});

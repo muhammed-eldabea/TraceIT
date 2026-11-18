@@ -1,0 +1,312 @@
+{
+  "name": "reqtify-like",
+  "displayName": "Requirements Traceability",
+  "description": "Explore requirement references and coverage in your workspace.",
+  "version": "0.1.0",
+  "publisher": "local",
+  "icon": "resources/logo.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:requirementsTraceability"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "reqtrace.refresh",
+        "title": "Requirements: Refresh Traceability"
+      },
+      {
+        "command": "reqtrace.openReference",
+        "title": "Requirements: Open Reference"
+      },
+      {
+        "command": "reqtrace.report",
+        "title": "Requirements: Generate Traceability Report"
+      },
+      {
+        "command": "reqtrace.dashboard",
+        "title": "Requirements: Open Traceability Dashboard",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "reqtrace.testRegex",
+        "title": "Requirements: Test Regex in Active Document"
+      },
+      {
+        "command": "reqtrace.baseline",
+        "title": "Requirements: Save Baseline"
+      },
+      {
+        "command": "reqtrace.compareBaseline",
+        "title": "Requirements: Compare Baseline"
+      },
+      {
+        "command": "reqtrace.configureCodebeamer",
+        "title": "Requirements: Configure Codebeamer Connection"
+      },
+      {
+        "command": "reqtrace.configureDoorsNext",
+        "title": "Requirements: Configure DOORS Next Connection"
+      },
+      {
+        "command": "reqtrace.addLink",
+        "title": "Requirements: Add Manual Trace Link"
+      },
+      {
+        "command": "reqtrace.removeLink",
+        "title": "Requirements: Remove Manual Trace Link"
+      },
+      {
+        "command": "reqtrace.createProject",
+        "title": "Requirements: Create Traceability Project"
+      },
+      {
+        "command": "reqtrace.openProject",
+        "title": "Requirements: Open Project Folder",
+        "icon": "$(folder-opened)"
+      },
+      {
+        "command": "reqtrace.saveProject",
+        "title": "Requirements: Save Project",
+        "icon": "$(save)"
+      },
+      {
+        "command": "reqtrace.reloadProject",
+        "title": "Requirements: Reload Project",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "reqtrace.editProjectConfig",
+        "title": "Requirements: Edit Project Configuration"
+      },
+      {
+        "command": "reqtrace.getStarted",
+        "title": "Requirements: Get Started"
+      },
+      {
+        "command": "reqtrace.addSource",
+        "title": "Requirements: Add Source"
+      },
+      {
+        "command": "reqtrace.assignGroup",
+        "title": "Requirements: Organize Document Groups"
+      },
+      {
+        "command": "reqtrace.addRule",
+        "title": "Requirements: Add Coverage Rule"
+      },
+      {
+        "command": "reqtrace.editLink",
+        "title": "Requirements: Edit Manual Trace Link"
+      },
+      {
+        "command": "reqtrace.previewBaseline",
+        "title": "Requirements: Preview Baseline Comparison"
+      },
+      {
+        "command": "reqtrace.exportMatrix",
+        "title": "Requirements: Export Traceability Matrix CSV"
+      },
+      {
+        "command": "reqtrace.exportGroupDiagram",
+        "title": "Requirements: Export Document Group Diagram (SVG)"
+      },
+      {
+        "command": "reqtrace.openDoorsClassicBridge",
+        "title": "Requirements: Open DOORS Classic Export Script"
+      },
+      {
+        "command": "reqtrace.testConfiguredRegex",
+        "title": "Requirements: Test and Update Source Pattern"
+      },
+      {
+        "command": "reqtrace.openPdfViewer",
+        "title": "Requirements: Open PDF Document"
+      },
+      {
+        "command": "reqtrace.openWordViewer",
+        "title": "Requirements: Open Word Document"
+      },
+      {
+        "command": "reqtrace.openWorkbookViewer",
+        "title": "Requirements: Open Excel Workbook"
+      },
+      {
+        "command": "reqtrace.openPptxViewer",
+        "title": "Requirements: Open PowerPoint Text Viewer"
+      },
+      {
+        "command": "reqtrace.inspectCodebeamerFields",
+        "title": "Requirements: Inspect Codebeamer Tracker Fields"
+      },
+      {
+        "command": "reqtrace.updateCodebeamerName",
+        "title": "Requirements: Update Codebeamer Item Name (Experimental)"
+      },
+      {
+        "command": "reqtrace.updateCodebeamerDescription",
+        "title": "Requirements: Update Codebeamer Description (Experimental)"
+      },
+      {
+        "command": "reqtrace.updateDoorsNextTitle",
+        "title": "Requirements: Update DOORS Next Title (Experimental)"
+      },
+      {
+        "command": "reqtrace.updateDoorsNextPrimaryText",
+        "title": "Requirements: Update DOORS Next Primary Text (Experimental)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "reqtrace",
+          "title": "Requirements",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "reqtrace": [
+        {
+          "id": "requirementsTraceability",
+          "name": "Traceability"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "requirementsTraceability",
+        "contents": "Open a folder or create a traceability project in your workspace.\n[Open Project Folder](command:reqtrace.openProject)\n[Create Project](command:reqtrace.createProject)\n[Get Started](command:reqtrace.getStarted)"
+      }
+    ],
+    "walkthroughs": [
+      {
+        "id": "getStarted",
+        "title": "Get started with Requirements Traceability",
+        "description": "Set up a project and review its coverage.",
+        "steps": [
+          {
+            "id": "openProject",
+            "title": "Open a project folder",
+            "description": "Choose a folder or enter its path. Create a configuration if the folder does not already have one.\n[Open project folder](command:reqtrace.openProject)",
+            "media": {
+              "markdown": "resources/walkthrough.md"
+            },
+            "completionEvents": [
+              "onCommand:reqtrace.openProject",
+              "onCommand:reqtrace.createProject"
+            ]
+          },
+          {
+            "id": "addSources",
+            "title": "Add sources and a coverage rule",
+            "description": "Choose the documents or connectors to analyze, then define which source covers another.\n[Add source](command:reqtrace.addSource)\n[Add coverage rule](command:reqtrace.addRule)",
+            "media": {
+              "markdown": "resources/walkthrough.md"
+            },
+            "completionEvents": [
+              "onCommand:reqtrace.addRule"
+            ]
+          },
+          {
+            "id": "review",
+            "title": "Review traceability",
+            "description": "Explore links, coverage, and issues in the dashboard.\n[Open dashboard](command:reqtrace.dashboard)",
+            "media": {
+              "markdown": "resources/walkthrough.md"
+            },
+            "completionEvents": [
+              "onCommand:reqtrace.dashboard"
+            ]
+          },
+          {
+            "id": "report",
+            "title": "Share a report",
+            "description": "Generate an HTML report after reviewing the analysis issues.\n[Generate report](command:reqtrace.report)",
+            "media": {
+              "markdown": "resources/walkthrough.md"
+            },
+            "completionEvents": [
+              "onCommand:reqtrace.report"
+            ]
+          }
+        ]
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "reqtrace.dashboard",
+          "when": "view == requirementsTraceability",
+          "group": "navigation"
+        },
+        {
+          "command": "reqtrace.openProject",
+          "when": "view == requirementsTraceability",
+          "group": "navigation"
+        },
+        {
+          "command": "reqtrace.saveProject",
+          "when": "view == requirementsTraceability",
+          "group": "navigation"
+        },
+        {
+          "command": "reqtrace.reloadProject",
+          "when": "view == requirementsTraceability",
+          "group": "navigation"
+        },
+        {
+          "command": "reqtrace.report",
+          "when": "view == requirementsTraceability",
+          "group": "1_reports"
+        },
+        {
+          "command": "reqtrace.getStarted",
+          "when": "view == requirementsTraceability",
+          "group": "9_help"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Requirements Traceability",
+      "properties": {
+        "reqtrace.exclude": {
+          "type": "string",
+          "default": "**/{node_modules,.git,dist,out}/**",
+          "description": "Glob for files excluded from reference scanning."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "test": "node tests/engine.test.js && node tests/dashboard.test.js && node tests/baseline.test.js && node tests/reqif.test.js && node tests/codebeamer.test.js && node tests/docx.test.js && node tests/oslc.test.js && node tests/matrix.test.js && node tests/manualLinks.test.js && node tests/xlsx.test.js && node tests/pdf.test.js && node tests/codebeamer-associations.test.js && node tests/csv.test.js && node tests/graph.test.js && node tests/projectSetup.test.js && node tests/dashboard-interaction.test.js && node tests/matrixExport.test.js && node tests/doorsClassic.test.js && node tests/configuredRegex.test.js && node tests/workerRunner.test.js && node tests/wordViewer.test.js && node tests/workbookViewer.test.js && node tests/xlsxEdit.test.js && node tests/docxEdit.test.js && node tests/reqifz.test.js && node tests/matrixLink.test.js && node tests/multiformatDemo.test.js && node tests/pptx.test.js && node tests/pptxViewer.test.js && node tests/pptxEdit.test.js && node tests/codebeamerWrite.test.js && node tests/doorsNextWrite.test.js && node tests/tree.test.js && node tests/odt.test.js",
+    "check": "node --check src/extension.js && node --check src/engine.js && node --check src/dashboard.js && node --check src/regexTester.js && node --check src/baseline.js && node --check src/reqif.js && node --check src/codebeamer.js && node --check src/docx.js && node --check src/oslc.js && node --check src/matrix.js && node --check src/manualLinks.js && node --check src/xlsx.js && node --check src/pdf.js && node --check src/csv.js && node --check src/graph.js && node --check src/projectSetup.js && node --check src/matrixExport.js && node --check src/doorsClassic.js && node --check src/analysisWorker.js && node --check src/workerRunner.js && node --check src/pdfViewer.js && node --check resources/pdf-viewer.js && node --check src/wordViewer.js && node --check src/workbookViewer.js && node --check resources/workbook-viewer.js && node --check src/xlsxEdit.js && node --check src/docxEdit.js && node --check src/reqifz.js && node --check src/matrixLink.js && node --check src/attributes.js && node --check src/pptx.js && node --check src/pptxModel.js && node --check src/pptxViewer.js && node --check resources/pptx-viewer.js && node --check src/pptxEdit.js && node --check src/xmlLiteral.js && node --check src/codebeamerWrite.js && node --check src/doorsNextWrite.js && node --check src/tree.js && node --check src/odt.js",
+    "test:connector-https": "node tests/connectorHttps.test.js"
+  },
+  "dependencies": {
+    "csv-parse": "^7.0.3",
+    "exceljs": "^4.4.0",
+    "fast-xml-parser": "^5.12.1",
+    "jszip": "^3.10.2",
+    "mammoth": "^1.13.0",
+    "pdfjs-dist": "^4.8.69",
+    "rdfxml-streaming-parser": "^3.3.0",
+    "sanitize-html": "^2.18.2",
+    "saxes": "^6.0.0"
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.3",
+    "pdf-lib": "^1.17.1"
+  },
+  "overrides": {
+    "exceljs": {
+      "uuid": "^11.1.1"
+    }
+  }
+}

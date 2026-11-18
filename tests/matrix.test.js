@@ -1,0 +1,12 @@
+'use strict';
+const assert = require('node:assert/strict');
+const { renderMatrices } = require('../src/matrix');
+const a = {id:'T1',title:'<test>',source:'tests'}, b = {id:'R1',title:'Requirement',source:'requirements'}, c = {id:'R2',title:'Missing',source:'requirements'};
+const model = {artifacts:[a,b,c],links:[{from:a,to:b,type:'verifies'}],coverage:[{from:'tests',to:'requirements',type:'verifies'}]};
+const html = renderMatrices(model);
+assert.match(html,/aria-label="linked"/);
+assert.match(html,/aria-label="no link"/);
+assert.match(html,/&lt;test&gt;/);
+assert.match(renderMatrices(model,1),/Showing the first 1/);
+console.log('Traceability matrix tests passed');
+const interactive=renderMatrices(model,80,0);assert.match(interactive,/data-artifact="0"/);assert.match(interactive,/data-artifact="1"/);assert.doesNotMatch(renderMatrices(model),/data-artifact=/);

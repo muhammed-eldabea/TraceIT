@@ -1,0 +1,64 @@
+// Experimental read-only DOORS Classic bridge.
+// Run with a formal module open in the DOORS DXL Interaction window.
+// The result is written to a new temporary file; no module data is modified.
+void csvField(Stream output, string value) {
+    output << "\""
+    if (!null value) {
+        int i
+        for (i = 0; i < length(value); i++) {
+            char ch = value[i]
+            if (ch == '"') output << "\"\""
+            else output << ch
+        }
+    }
+    output << "\""
+}
+Module m = current Module
+if (null m) {
+    ack "Open a formal module before running the traceability export."
+} else {
+    string filename = tempFileName()
+    Stream out = write filename
+    string modulePath = fullName(m)
+    Object o
+    Link l
+    int objectCount = 0
+    int linkCount = 0
+    int unreadableCount = 0
+    out << "kind,module,absolute,id,heading,text,targetModule,targetAbsolute\n"
+    // entire() ignores the display filter; deleted objects are explicitly excluded.
+    for o in entire(m) do {
+        if (!isDeleted(o) && canRead(o)) {
+            objectCount++
+            csvField(out, "object"); out << ","
+            csvField(out, modulePath); out << ","
+            csvField(out, o."Absolute Number" ""); out << ","
+            csvField(out, identifier(o)); out << ","
+            csvField(out, o."Object Heading" ""); out << ","
+            csvField(out, o."Object Text" ""); out << ",,\n"
+            for l in o -> "*" do {
+                linkCount++
+                ModName_ targetModule = target(l)
+                csvField(out, "link"); out << ","
+                csvField(out, modulePath); out << ","
+                csvField(out, sourceAbsNo(l) ""); out << ",,,,"
+                if (!null targetModule) csvField(out, fullName(targetModule))
+                else csvField(out, "")
+                out << ","
+                csvField(out, targetAbsNo(l) ""); out << "\n"
+            }
+        } else if (!isDeleted(o) && !canRead(o)) {
+            unreadableCount++
+        }
+    }
+    // Footer: module, object count, link count and unreadable object count.
+    csvField(out, "complete"); out << ","
+    csvField(out, modulePath); out << ","
+    csvField(out, objectCount ""); out << ","
+    csvField(out, linkCount ""); out << ","
+    csvField(out, unreadableCount ""); out << ","
+    csvField(out, "bridge-v1"); out << ",,\n"
+    close(out)
+    print "Traceability export saved to: " filename "\n"
+    print "Copy the output into your VS Code workspace and configure doors-classic-export.\n"
+}

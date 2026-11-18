@@ -1,0 +1,23 @@
+'use strict';
+const assert = require('node:assert/strict');
+const ExcelJS = require('exceljs');
+const {extractXlsx} = require('../src/xlsx');
+const {analyze} = require('../src/engine');
+(async()=>{
+ const workbook = new ExcelJS.Workbook();
+ const sheet = workbook.addWorksheet('Requirements');
+ sheet.addRow(['REQ-1','Login']);
+ sheet.addRow(['REQ-2',{formula:'1+1'}]);
+ workbook.addWorksheet('Tests').addRow(['T-1','REQ-1']);
+ const bytes = await workbook.xlsx.writeBuffer();
+ const extracted = await extractXlsx(bytes,{sheet:'Requirements'});
+ assert.match(extracted.text,/Requirements\t1\tREQ-1\tLogin/);
+ assert.doesNotMatch(extracted.text,/Tests/);
+ assert.ok(extracted.diagnostics.some(x=>x.includes('B2') && x.includes('no cached value')));
+ const source={name:'excel',format:'xlsx',include:'*.xlsx',artifact:'^[^\\t]+\\t[0-9]+\\t(?<id>REQ-[0-9]+)\\t(?<title>.*)$'};
+ const result=analyze({sources:[source]},[{source:'excel',path:'requirements.xlsx',text:extracted.text,viewUri:'reqtrace-xlsx:/x',diagnostics:extracted.diagnostics}]);
+ assert.equal(result.artifacts.length,2); assert.equal(result.artifacts[0].id,'REQ-1'); assert.equal(result.artifacts[0].viewUri,'reqtrace-xlsx:/x');
+ assert.ok(result.diagnostics.some(x=>x.includes('B2')));
+ await assert.rejects(extractXlsx(bytes,{sheet:'Missing'}),/Worksheet not found/);
+ console.log('Excel extraction tests passed');
+})().catch(error=>{console.error(error);process.exitCode=1});

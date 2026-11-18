@@ -1,0 +1,17 @@
+'use strict';
+const assert = require('node:assert/strict');
+const {renderSourceGraph,exportGroupGraphSvg} = require('../src/graph');
+const graph = renderSourceGraph({artifacts:[{source:'<tests>'},{source:'requirements'}],coverage:[{from:'<tests>',to:'requirements',type:'verifies',covered:0,total:1}]});
+assert.match(graph,/&lt;tests&gt;/);
+assert.match(graph,/0 of 1 targets linked/);
+assert.match(graph,/marker-end=/);
+assert.doesNotMatch(graph,/<tests>/);
+assert.match(renderSourceGraph({artifacts:[],coverage:[]}),/No sources/);
+const circular = renderSourceGraph({artifacts:[{source:'a'}],coverage:[{from:'a',to:'a',type:'links',covered:1,total:1}]});
+assert.match(circular,/ C /);
+const groups=renderSourceGraph({artifacts:[{source:'doc-a'},{source:'doc-b'},{source:'test'}],sourceGroups:{'doc-a':'Requirements','doc-b':'Requirements',test:'Tests'},groupCoverage:[{from:'Tests',to:'Requirements',type:'verifies',covered:1,total:2}],coverage:[]},0,'file:///project');
+assert.match(groups,/50%/);assert.match(groups,/data-group-node/);assert.match(groups,/Requirements/);assert.match(groups,/2 artifacts/);
+const empty=renderSourceGraph({artifacts:[],sourceGroups:{a:'A',b:'B'},groupCoverage:[{from:'A',to:'B',type:'verifies',covered:0,total:0}],coverage:[]});assert.match(empty,/No targets/);
+const exported=exportGroupGraphSvg({artifacts:[{source:'a'},{source:'b'}],sourceGroups:{a:'Tests',b:'Requirements'},groupCoverage:[{from:'Tests',to:'Requirements',type:'verifies',covered:1,total:2}],coverage:[]});assert.match(exported,/^<svg/);assert.match(exported,/50%/);assert.match(exported,/<style>/);assert.doesNotMatch(exported,/data-group-node/);
+assert.throws(()=>exportGroupGraphSvg({artifacts:[],coverage:[]}),/no.*group/i);
+console.log('Source graph tests passed');

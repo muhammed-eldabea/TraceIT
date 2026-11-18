@@ -1,0 +1,7 @@
+{
+  "sources": [
+    { "name": "requirements", "include": "requirements.md", "artifact": "^# (?<id>REQ-[0-9]+): (?<title>.+)$" },
+    { "name": "tests", "include": "tests.md", "artifact": "^# (?<id>TEST-[0-9]+): (?<title>.+)$", "reference": "^Verifies: (?<target>REQ-[0-9]+)$" }
+  ],
+  "links": [{ "from": "tests", "to": "requirements", "type": "verifies" }]
+}

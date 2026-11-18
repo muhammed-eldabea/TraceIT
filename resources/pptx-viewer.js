@@ -1,0 +1,7 @@
+'use strict';
+(()=>{const vscode=acquireVsCodeApi(),previous=document.getElementById('previous'),next=document.getElementById('next'),edit=document.getElementById('edit'),label=document.getElementById('label'),status=document.getElementById('status'),content=document.getElementById('content');let slides,index=0;
+function render(){const slide=slides[index];label.textContent=slide?`Slide ${slide.number} of ${slides.length}`:'No slides';content.textContent=slide && slide.text || '';previous.disabled=index===0;next.disabled=!slide||index>=slides.length-1;edit.disabled=!slide;status.textContent='Text-only view. Original layout, images, charts, and notes are not shown.';vscode.postMessage({type:'rendered',slide:slide?slide.number:null});}
+edit.addEventListener('click',()=>{if(slides && slides[index])vscode.postMessage({type:'edit',slide:slides[index].number});});
+previous.addEventListener('click',()=>{if(index>0){index--;render();}});next.addEventListener('click',()=>{if(index<slides.length-1){index++;render();}});
+window.addEventListener('message',event=>{if(!event.data||event.data.type!=='slides'||slides)return;try{slides=event.data.slides;const requested=Number(event.data.slide);index=Number.isInteger(requested)&&requested>=1&&requested<=slides.length?requested-1:0;render();}catch(error){vscode.postMessage({type:'error',message:error.message});}});vscode.postMessage({type:'ready'});
+})();

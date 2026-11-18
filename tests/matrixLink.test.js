@@ -1,0 +1,11 @@
+'use strict';
+const assert=require('node:assert/strict');const {matrixLink}=require('../src/matrixLink');
+const a={source:'tests',id:'T1'},b={source:'req',id:'R1'};const entry={config:{links:[{from:'tests',to:'req',type:'verifies'}],manualLinks:[]},result:{artifacts:[a,b],links:[]}};
+const request={from:{source:'tests',id:'T1'},to:{source:'req',id:'R1'},type:'verifies'};
+assert.deepEqual(matrixLink(entry,request),request);
+assert.throws(()=>matrixLink({...entry,result:{...entry.result,artifacts:[a,a,b]}},request),/ambiguous/);
+assert.throws(()=>matrixLink({...entry,result:{...entry.result,links:[{from:a,to:b,type:'verifies'}]}},request),/already exists/);
+assert.throws(()=>matrixLink(entry,{...request,type:'other'}),/rule/);
+console.log('Matrix link tests passed');
+const {matrixUnlink}=require('../src/matrixLink');const manualEntry={...entry,config:{...entry.config,manualLinks:[request]}};assert.deepEqual(matrixUnlink(manualEntry,request),[]);assert.throws(()=>matrixUnlink(entry,request),/no longer exists/);assert.throws(()=>matrixUnlink(manualEntry,{...request,type:'other'}),/rule/);
+const {analyze}=require('../src/engine');const config={sources:[{name:'req',include:'r',artifact:'^(?<id>R[0-9]+)$'},{name:'tests',include:'t',artifact:'^(?<id>T[0-9]+)$',reference:'^ref (?<target>R[0-9]+)$'}],links:[{from:'tests',to:'req',type:'verifies'}],manualLinks:[request]};const files=[{source:'req',path:'r',text:'R1'},{source:'tests',path:'t',text:'T1\nref R1'}];const both=analyze(config,files);assert.equal(both.links.length,1);assert.equal(both.links[0].manual,true);const withoutManual=analyze({...config,manualLinks:[]},files);assert.equal(withoutManual.links.length,1);assert.notEqual(withoutManual.links[0].manual,true);

@@ -1,0 +1,20 @@
+'use strict';
+const assert=require('node:assert/strict');
+const Module=require('node:module');const original=Module._load;
+const state={pattern:'',choice:null,warnings:[],infos:[],errors:[],documentText:''};
+const vscode={window:{showInputBox:async options=>{state.inputOptions=options;return state.pattern;},showQuickPick:async items=>{state.items=items;return state.choice===null?null:items[state.choice];},showInformationMessage:async value=>state.infos.push(value),showWarningMessage:async value=>state.warnings.push(value),showErrorMessage:async value=>state.errors.push(value),showTextDocument:async doc=>({document:doc,revealRange(){}})},workspace:{openTextDocument:async()=>({getText:()=>state.documentText})},Uri:{parse:value=>value},Position:class{constructor(line,character){this.line=line;this.character=character;}},Range:class{},Selection:class{},TextEditorRevealType:{InCenter:0}};
+Module._load=function(request){if(request==='vscode')return vscode;return original.apply(this,arguments);};
+const {testConfiguredRegex}=require('../src/regexTester');Module._load=original;
+(async()=>{
+ const lines=[]; const output={clear(){lines.length=0;},appendLine(v){lines.push(v);},show(){}};
+ const file={path:'requirements.md',text:'REQ-1: Login\nREQ-2: Logout',uri:'file'};
+ const source={name:'requirements',artifact:'^(?<id>REQ-\\d+): (?<title>.+)$'};
+ state.pattern=source.artifact;state.choice=0;let saved;
+ await testConfiguredRegex(output,{file,source,kind:'artifact'},async p=>saved=p);
+ assert.equal(saved,source.artifact);assert.equal(state.items.length,3);assert.match(lines.join('\n'),/Matches: 2/);
+ state.choice=1;state.documentText='changed';await testConfiguredRegex(output,{file,source,kind:'artifact'},async()=>{});
+ assert.match(state.warnings.pop(),/changed since analysis/);
+ state.pattern='(';state.choice=null;await testConfiguredRegex(output,{file,source,kind:'artifact'},async()=>{});assert.match(state.errors.pop(),/Invalid regular expression/);
+ state.pattern='';state.choice=0;await testConfiguredRegex(output,{file,source,kind:'reference'},async p=>saved=p);assert.equal(saved,'');
+ console.log('Configured regex workflow tests passed');
+})().catch(error=>{console.error(error);process.exitCode=1});

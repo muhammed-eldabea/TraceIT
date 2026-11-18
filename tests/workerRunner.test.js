@@ -1,0 +1,32 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {analyzeInWorker,matchInWorker}=require('../src/workerRunner');
+(async()=>{
+ const config={sources:[{name:'req',include:'r',artifact:'^(?<id>R[0-9]+)$'},{name:'tests',include:'t',artifact:'^(?<id>T[0-9]+)$',reference:'^ref (?<target>R[0-9]+)$'}],links:[{from:'tests',to:'req',type:'verifies'}]};
+ const files=[{source:'req',path:'r',text:'R1',uri:{uncloneable:()=>{}}},{source:'tests',path:'t',text:'T1\nref R1'}];
+ const result=await analyzeInWorker(config,files);
+ assert.equal(result.links.length,1);assert.equal(result.links[0].to,result.artifacts[0]);assert.equal(result.coverage[0].covered,1);
+ const matches=await matchInWorker('^(?<id>R[0-9]+)$','R1\nno\nR2');assert.equal(matches.length,2);assert.equal(matches[1].groups.id,'R2');
+ const all=await matchInWorker('(?<target>R[0-9]+)','R1 and R2',5000,true);assert.deepEqual(all.map(m=>m.groups.target),['R1','R2']);
+ await assert.rejects(matchInWorker('(a+)+$','a'.repeat(40)+'!',250),/timed out/);
+ const after=await matchInWorker('^ok$','ok');assert.equal(after.length,1);
+ await assert.rejects(analyzeInWorker({sources:[{name:'bad',include:'x',artifact:'['}]},[]),/artifact/);
+ console.log('Worker isolation tests passed');
+})().catch(error=>{console.error(error);process.exitCode=1});
+;(async()=>{
+ const {extractInWorker}=require('../src/workerRunner');
+ const ExcelJS=require('exceljs');const {PDFDocument,StandardFonts}=require('pdf-lib');const JSZip=require('jszip');
+ const workbook=new ExcelJS.Workbook();workbook.addWorksheet('Req').addRow(['REQ-1','Text']);
+ const excel=await extractInWorker('xlsx',await workbook.xlsx.writeBuffer(),{sheet:'Req'});assert.match(excel.text,/REQ-1/);
+ const pdf=await PDFDocument.create();const font=await pdf.embedFont(StandardFonts.Helvetica);pdf.addPage().drawText('REQ-2',{x:40,y:700,font});
+ const page=await extractInWorker('pdf',await pdf.save());assert.match(page.text,/REQ-2/);
+ const zip=new JSZip();zip.file('[Content_Types].xml','<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+ zip.file('_rels/.rels','<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+ zip.file('word/document.xml','<?xml version="1.0"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>REQ-3</w:t></w:r></w:p></w:body></w:document>');
+ const word=await extractInWorker('docx',await zip.generateAsync({type:'nodebuffer'}));assert.match(word.text,/REQ-3/);
+ await assert.rejects(extractInWorker('pdf',Buffer.from('invalid')),/PDF/);
+ await assert.rejects(extractInWorker('xlsx',Buffer.alloc(20*1024*1024+1)),/size limit/);
+ await assert.rejects(extractInWorker('invalid',Buffer.alloc(0)),/Unsupported/);
+ await assert.rejects(extractInWorker('pdf',await pdf.save(),{},1),/Document extraction timed out/);
+ console.log('Document extraction worker tests passed');
+})().catch(error=>{console.error(error);process.exitCode=1});
